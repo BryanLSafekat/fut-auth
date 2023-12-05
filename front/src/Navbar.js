@@ -7,6 +7,8 @@ const Navbar = () => {
         <h1>Prueba</h1>
         <ul>
           <button>Login</button>
+          &nbsp;&nbsp;
+          <button>Logout</button>
         </ul>
       </div>
     </nav>
