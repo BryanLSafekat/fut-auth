@@ -50,7 +50,7 @@ function App() {
           <li key={futbolista.id}>
             {futbolista.id} - {futbolista.name} - Votos: {futbolista.votes}
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <button onClick={() => handleVote(futbolista.id)}>Votar</button>
+            <button onClick={() => handleVote(futbolista.id)} disabled= {true}>Votar</button>
           </li>
         ))}
       </ul>
