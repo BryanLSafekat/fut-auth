@@ -1,4 +1,5 @@
 const express = require("express");
+const { OAuth2Client } = require("google-auth-library");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
@@ -9,6 +10,37 @@ const port = 8080;
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 app.use(cors());
+
+const client = new OAuth2Client({
+  clientId:
+    "20670889963-v97hgkotjllfv59rchgv3jga39gaqcs0.apps.googleusercontent.com",
+  clientSecret: "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",
+  redirectUri: "http://localhost:8080/callback",
+});
+
+app.get("/auth/google", (req, res) => {
+  const authUrl = client.generateAuthUrl({
+    access_type: "Offline",
+    scope: [
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ],
+  });
+  res.redirect(authUrl);
+});
+
+app.get("/callback", async (req, res) => {
+  const code = req.query.code;
+
+try {
+  const { tokens } = await client.getToken(code);
+  res.send("Autenticación exitosa");
+} catch (error) {
+  console.error("Error al obtener token", error);
+  res.status(500).send("Error en la autenticación");
+}
+
+})
 
 app.get("/api/futbolistas", (req, res) => {
   res.sendFile(path.join(__dirname, "../api.json"));

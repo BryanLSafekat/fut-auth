@@ -28,7 +28,6 @@ function App() {
 
       const votes = updatedFutbolistas.find((futbolista) => futbolista.id === id)?.votes || 0;
 
-
       await axios.put(`http://localhost:8080/api/futbolistas/${id}/votes`, {
         votes: votes 
       });
@@ -36,6 +35,8 @@ function App() {
       console.log("Error al votar: ", error);
     }
   };
+
+  
 
   return (
     <>
@@ -50,7 +51,7 @@ function App() {
           <li key={futbolista.id}>
             {futbolista.id} - {futbolista.name} - Votos: {futbolista.votes}
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <button onClick={() => handleVote(futbolista.id)} disabled= {true}>Votar</button>
+            <button onClick={() => handleVote(futbolista.id)}>Votar</button>
           </li>
         ))}
       </ul>
@@ -59,3 +60,6 @@ function App() {
 }
 
 export default App;
+
+
+//bHMkGfI6CvcjUmnb

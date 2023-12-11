@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@supabase/supabase-js": "^2.39.0",
     "axios": "^1.6.2",
     "cra-template": "1.2.0",
+    "google-auth-library": "^9.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-easy-oauth2": "^2.4.8",
