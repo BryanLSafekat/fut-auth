@@ -2,16 +2,28 @@ import React from "react";
 import axios from "axios";
 
 const Navbar = () => {
-  const handleLogin = async () => {
+  const handleLogin = () => {
+    const authUrl = "http://localhost:8080/auth/google";
+
+    const width = 500;
+    const height = 600;
+
+    const left = window.innerWidth / 2 - width / 2;
+    const top = window.innerHeight / 2 - height / 2;
+
+    window.open(authUrl, "Google Login", `width=${width}, height=${height}, left=${left}, top=${top}`);
+  };
+
+  const handleLogout = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/auth/google");
+      await axios.post("http://localhost:8080/logout");
 
-      window.location.href = response.data.authUrl;
+      window.location.href = "/";
     } catch (error) {
-      console.error("Error al iniciar sesion", error);    
+      console.error("Error al cerrar sesión", error);
     }
-  }
-
+  };
+  
   return (
     <nav>
       <div className="Navbar">
@@ -19,7 +31,7 @@ const Navbar = () => {
         <ul>
           <button onClick={handleLogin}>Login</button>
           &nbsp;&nbsp;
-          <button>Logout</button>
+          <button onClick={handleLogout}>Logout</button>
         </ul>
       </div>
     </nav>

@@ -7,6 +7,9 @@ const fs = require("fs");
 const app = express();
 const port = 8080;
 
+let accessToken = null;
+let refreshToken = null;
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 app.use(cors());
@@ -18,9 +21,13 @@ const client = new OAuth2Client({
   redirectUri: "http://localhost:8080/callback",
 });
 
+const clearSessionCookies = (res) => {
+  res.clearCookie("token");
+};
+
 app.get("/auth/google", (req, res) => {
   const authUrl = client.generateAuthUrl({
-    access_type: "Offline",
+    access_type: "offline",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",
@@ -32,18 +39,52 @@ app.get("/auth/google", (req, res) => {
 app.get("/callback", async (req, res) => {
   const code = req.query.code;
 
-try {
-  const { tokens } = await client.getToken(code);
-  res.send("Autenticación exitosa");
-} catch (error) {
-  console.error("Error al obtener token", error);
-  res.status(500).send("Error en la autenticación");
-}
+  try {
+    const { tokens } = await client.getToken(code);
 
-})
+    accessToken = tokens.access_token;
+    refreshToken = tokens.refresh_token;
+
+    res.send("Autenticación exitosa");
+  } catch (error) {
+    console.error("Error al obtener token", error);
+
+    res.status(500).send("Error en la autenticación");
+  }
+});
+
+app.post("/logout", (req, res) => {
+  accessToken = null;
+  refreshToken = null;
+
+  clearSessionCookies(res);
+
+  res.status(200).send("Sesion cerrada exitosamente");
+});
 
 app.get("/api/futbolistas", (req, res) => {
   res.sendFile(path.join(__dirname, "../api.json"));
+});
+
+app.get("/api/futbolistas/:id", (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const filePath = path.join(__dirname, "../api.json");
+    const futbolistas = require(filePath);
+
+    const futbolista = futbolistas.find((f) => f.id === parseInt(id));
+
+    if (!futbolista) {
+      res.status(404).json({ message: "Futbolista no encontrado" });
+      return;
+    }
+
+    res.status(200).json(futbolista);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener el futbolista" });
+  }
 });
 
 app.put("/api/futbolistas/:id/votes", (req, res) => {
@@ -67,7 +108,7 @@ app.put("/api/futbolistas/:id/votes", (req, res) => {
         return;
       }
 
-      futbolista.votes += parseInt(votes);
+      futbolista.votes = futbolista.votes ? futbolista.votes + 1 : 1;
 
       fs.writeFile(
         path.join(__dirname, "../api.json"),

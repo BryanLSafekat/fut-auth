@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import "./App.css"
+import "./App.css";
 import axios from "axios";
 import Navbar from "./Navbar";
 
 function App() {
   const [futbolistas, setFutbolistas] = useState([]);
+  const [voted, setVoted] = useState(false);
 
   useEffect(() => {
     const fetchFutbolistas = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/futbolistas");
+        const response = await axios.get(
+          "http://localhost:8080/api/futbolistas"
+        );
         setFutbolistas(response.data);
       } catch (error) {
         console.log("Error al obtener los datos de la API: ", error);
@@ -20,23 +23,29 @@ function App() {
 
   const handleVote = async (id) => {
     try {
-      const updatedFutbolistas = futbolistas.map((futbolista) =>
-        futbolista.id === id ? { ...futbolista, votes: futbolista.votes + 1 } : futbolista
-      );
+      if (!voted) {
+        const response = await axios.get(
+          `http://localhost:8080/api/futbolistas/${id}`
+        );
+        const currentVotes = response.data.votes || 0;
 
-      setFutbolistas(updatedFutbolistas);
+        const updatedFutbolistas = futbolistas.map((futbolista) =>
+          futbolista.id === id
+            ? { ...futbolista, votes: futbolista.votes + 1 }
+            : futbolista
+        );
 
-      const votes = updatedFutbolistas.find((futbolista) => futbolista.id === id)?.votes || 0;
+        setFutbolistas(updatedFutbolistas);
+        setVoted(true);
 
-      await axios.put(`http://localhost:8080/api/futbolistas/${id}/votes`, {
-        votes: votes 
-      });
+        await axios.put(`http://localhost:8080/api/futbolistas/${id}/votes`, {
+          votes: currentVotes + 1,
+        });
+      }
     } catch (error) {
       console.log("Error al votar: ", error);
     }
   };
-
-  
 
   return (
     <>
@@ -51,7 +60,9 @@ function App() {
           <li key={futbolista.id}>
             {futbolista.id} - {futbolista.name} - Votos: {futbolista.votes}
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <button onClick={() => handleVote(futbolista.id)}>Votar</button>
+            <button onClick={() => handleVote(futbolista.id)} disabled={voted}>
+              Votar
+            </button>
           </li>
         ))}
       </ul>
@@ -60,6 +71,3 @@ function App() {
 }
 
 export default App;
-
-
-//bHMkGfI6CvcjUmnb
