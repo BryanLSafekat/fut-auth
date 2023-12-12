@@ -53,7 +53,7 @@ function App() {
         <Navbar />
       </div>
 
-      <h1>Futbolistas</h1>
+      <h2>Futbolistas</h2>
 
       <ul>
         {futbolistas.map((futbolista) => (

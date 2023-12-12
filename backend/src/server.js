@@ -3,6 +3,7 @@ const { OAuth2Client } = require("google-auth-library");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
+const axios = require("axios");
 
 const app = express();
 const port = 8080;
@@ -45,7 +46,15 @@ app.get("/callback", async (req, res) => {
     accessToken = tokens.access_token;
     refreshToken = tokens.refresh_token;
 
-    res.send("Autenticación exitosa");
+    const user = await client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience:
+        "20670889963-v97hgkotjllfv59rchgv3jga39gaqcs0.apps.googleusercontent.com",
+    });
+
+    const userData = user.getPayload();
+
+    res.json(userData);
   } catch (error) {
     console.error("Error al obtener token", error);
 
@@ -64,6 +73,31 @@ app.post("/logout", (req, res) => {
 
 app.get("/api/futbolistas", (req, res) => {
   res.sendFile(path.join(__dirname, "../api.json"));
+});
+
+app.get("/userData", async (req, res) => {
+  try {
+    if (!accessToken) {
+      
+      return;
+    }
+
+    const googleResponse = await axios.get(
+      "https://www.googleapis.com/oauth2/v1/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const userData = googleResponse.data;
+
+    res.json(userData);
+  } catch (error) {
+    console.error("Error al obtener datos del usuario: ", error);
+    res.status(500).send("Error al obtener datos del usuario");
+  }
 });
 
 app.get("/api/futbolistas/:id", (req, res) => {
