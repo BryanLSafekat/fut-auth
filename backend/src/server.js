@@ -3,7 +3,6 @@ const { OAuth2Client } = require("google-auth-library");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const axios = require("axios");
 
 const app = express();
 const port = 8080;
@@ -17,8 +16,8 @@ app.use(cors());
 
 const client = new OAuth2Client({
   clientId:
-    "20670889963-v97hgkotjllfv59rchgv3jga39gaqcs0.apps.googleusercontent.com",
-  clientSecret: "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",
+    "20670889963-f4lnan6ma5ingk7r5o5o4ifubjdtuhb3.apps.googleusercontent.com",
+  clientSecret: "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",
   redirectUri: "http://localhost:8080/callback",
 });
 
@@ -48,8 +47,6 @@ app.get("/callback", async (req, res) => {
 
     const user = await client.verifyIdToken({
       idToken: tokens.id_token,
-      audience:
-        "20670889963-v97hgkotjllfv59rchgv3jga39gaqcs0.apps.googleusercontent.com",
     });
 
     const userData = user.getPayload();
@@ -75,28 +72,14 @@ app.get("/api/futbolistas", (req, res) => {
   res.sendFile(path.join(__dirname, "../api.json"));
 });
 
-app.get("/userData", async (req, res) => {
+app.get("/get-client-id", (req, res) => {
   try {
-    if (!accessToken) {
-      
-      return;
-    }
-
-    const googleResponse = await axios.get(
-      "https://www.googleapis.com/oauth2/v1/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    const userData = googleResponse.data;
-
-    res.json(userData);
+    const clientId = "20670889963-f4lnan6ma5ingk7r5o5o4ifubjdtuhb3.apps.googleusercontent.com";
+    
+    res.status(200).json({ clientId });
   } catch (error) {
-    console.error("Error al obtener datos del usuario: ", error);
-    res.status(500).send("Error al obtener datos del usuario");
+    console.error("Error al obtener el ID de cliente", error);
+    res.status(500).json({error: "Error al obtener el ID del cliente"});
   }
 });
 
