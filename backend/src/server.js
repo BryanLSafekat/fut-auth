@@ -11,7 +11,6 @@ let accessToken = null;
 let refreshToken = null;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 app.use(cors());
 
 const client = new OAuth2Client({
@@ -41,20 +40,16 @@ app.get("/callback", async (req, res) => {
 
   try {
     const { tokens } = await client.getToken(code);
-
-    accessToken = tokens.access_token;
-    refreshToken = tokens.refresh_token;
-
-    const user = await client.verifyIdToken({
+    const ticket = await client.verifyIdToken({
       idToken: tokens.id_token,
     });
+    const payload = ticket.getPayload();
 
-    const userData = user.getPayload();
+    const { name, email } = payload;
 
-    res.json(userData);
+    res.json({ isLoggedIn: true, name, email });
   } catch (error) {
     console.error("Error al obtener token", error);
-
     res.status(500).send("Error en la autenticación");
   }
 });
@@ -73,14 +68,10 @@ app.get("/api/futbolistas", (req, res) => {
 });
 
 app.get("/get-client-id", (req, res) => {
-  try {
-    const clientId = "20670889963-f4lnan6ma5ingk7r5o5o4ifubjdtuhb3.apps.googleusercontent.com";
-    
-    res.status(200).json({ clientId });
-  } catch (error) {
-    console.error("Error al obtener el ID de cliente", error);
-    res.status(500).json({error: "Error al obtener el ID del cliente"});
-  }
+  const clientId =
+    "20670889963-f4lnan6ma5ingk7r5o5o4ifubjdtuhb3.apps.googleusercontent.com";
+
+  res.status(200).json({ clientId });
 });
 
 app.get("/api/futbolistas/:id", (req, res) => {
@@ -154,5 +145,5 @@ app.put("/api/futbolistas/:id/votes", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Servidor en funcionamiento: en ${port}`);
+  console.log(`Servidor en funcionamiento en el puerto ${port}`);
 });
